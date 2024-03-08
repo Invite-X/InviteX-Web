@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String            @id
+  owned_groups Group[]
+  members      MembersOfGroups[]
+
+  @@index([id])
+}
+
+model Group {
+  id         Int               @id @default(autoincrement())
+  created_at DateTime          @default(now())
+  name       String
+  ownerId    String
+  owner      User              @relation(fields: [ownerId], references: [id])
+  Invite     Invite[]
+  members    MembersOfGroups[]
+
+  @@index([ownerId, id])
+}
+
+model MembersOfGroups {
+  id      Int    @id @default(autoincrement())
+  groupId Int
+  userId  String
+  group   Group  @relation(fields: [groupId], references: [id])
+  user    User   @relation(fields: [userId], references: [id])
+
+  @@index([groupId, userId])
+}
+
+model Invite {
+  id          Int      @id @default(autoincrement())
+  creatorId   String
+  groupId     Int
+  created_at  DateTime @default(now())
+  title       String
+  description String
+  location    String
+  datetime    DateTime
+  imagePath   String
+  group       Group    @relation(fields: [groupId], references: [id])
+
+  @@index([id, groupId])
+}
+
+model InviteLog {
+  id       Int @id @default(autoincrement())
+  inviteId Int
+  groupId  Int
+}
